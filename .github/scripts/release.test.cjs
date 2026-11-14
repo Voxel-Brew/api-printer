@@ -20,7 +20,7 @@ test('prepare and candidate preserve immutable refs and allow upload retries', (
   try {
     run('git', ['init','--bare',remote], directory);
     run('git', ['init','-b','master',work], directory);
-    fs.writeFileSync(path.join(work, 'gradle.properties'), 'projectVersion=0.1.0-SNAPSHOT\nmodelVersion=0.1.0-SNAPSHOT\n');
+    fs.writeFileSync(path.join(work, 'gradle.properties'), 'projectVersion=0.1.0-SNAPSHOT\nbomVersion=0.1.0-SNAPSHOT\n');
     git('add','.'); git('commit','-m','Initial'); git('remote','add','origin',remote); git('push','origin','master');
     const base = git('rev-parse','HEAD');
     const common = {GITHUB_REPOSITORY:'Voxel-Brew/api-export'};
@@ -28,7 +28,7 @@ test('prepare and candidate preserve immutable refs and allow upload retries', (
     assert.match(git('show','HEAD:gradle.properties'), /projectVersion=0.2.0-SNAPSHOT/);
     git('fetch','origin','release/0.1.x');
     const source = git('rev-parse','FETCH_HEAD');
-    assert.match(git('show',`${source}:gradle.properties`), /modelVersion=0.1.0$/);
+    assert.match(git('show',`${source}:gradle.properties`), /bomVersion=0.1.0$/);
     const releaseEnv = {...common,GITHUB_REF_NAME:'release/0.1.x',GITHUB_SHA:source};
     run(process.execPath,[script,'candidate'],work,releaseEnv);
     assert.equal(git('ls-remote','--tags','origin'), '');
@@ -45,12 +45,12 @@ test('prepare and candidate preserve immutable refs and allow upload retries', (
   }
 });
 test('version replacement leaves dependencies unchanged', () => {
-  assert.equal(replaceVersion('projectVersion=1.2.3-SNAPSHOT\nmodelVersion=1.0.0\n', '1.2.3'), 'projectVersion=1.2.3\nmodelVersion=1.0.0\n');
+  assert.equal(replaceVersion('projectVersion=1.2.3-SNAPSHOT\nbomVersion=1.0.0\n', '1.2.3'), 'projectVersion=1.2.3\nbomVersion=1.0.0\n');
 });
-test('pin only dependencies used by this API and reject dynamic versions', () => {
-  const text = 'modelVersion=1.2.3-SNAPSHOT\nexportVersion=2.3.4-SNAPSHOT\n';
-  assert.equal(pinDependencies(text, 'model', {}), text);
-  assert.equal(pinDependencies(text, 'slicer', {}), 'modelVersion=1.2.3\nexportVersion=2.3.4\n');
-  assert.match(pinDependencies(text, 'export', {MODEL_VERSION:'2.0.0'}), /^modelVersion=2.0.0/);
-  for (const value of ['1.+', '1.0.0-SNAPSHOT', 'latest.release']) assert.throws(() => pinDependencies(text, 'export', {MODEL_VERSION:value}));
+test('pin the BOM for every API and reject dynamic versions', () => {
+  const text = 'bomVersion=1.2.3-SNAPSHOT\nexportVersion=2.3.4-SNAPSHOT\n';
+  assert.equal(pinDependencies(text, 'model', {}), 'bomVersion=1.2.3\nexportVersion=2.3.4-SNAPSHOT\n');
+  assert.equal(pinDependencies(text, 'slicer', {}), 'bomVersion=1.2.3\nexportVersion=2.3.4-SNAPSHOT\n');
+  assert.match(pinDependencies(text, 'export', {BOM_VERSION:'2.0.0'}), /^bomVersion=2.0.0/);
+  for (const value of ['1.+', '1.0.0-SNAPSHOT', 'latest.release']) assert.throws(() => pinDependencies(text, 'export', {BOM_VERSION:value}));
 });

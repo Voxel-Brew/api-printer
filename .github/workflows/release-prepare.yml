@@ -2,11 +2,8 @@ name: Prepare release
 on:
   workflow_dispatch:
     inputs:
-      model-version:
-        description: "Released model dependency (blank uses current version without -SNAPSHOT)"
-        type: string
-      export-version:
-        description: "Released export dependency for slicer (blank uses current version without -SNAPSHOT)"
+      bom-version:
+        description: "Released BOM version (blank removes -SNAPSHOT from current version)"
         type: string
 permissions:
   contents: write
@@ -28,8 +25,7 @@ jobs:
       - run: node --test .github/scripts/release.test.cjs
       - name: Create release branch and advance master
         env:
-          MODEL_VERSION: ${{ inputs.model-version }}
-          EXPORT_VERSION: ${{ inputs.export-version }}
+          BOM_VERSION: ${{ inputs.bom-version }}
         run: node .github/scripts/release.cjs prepare
       - name: Explicitly check the new master snapshot
         env:

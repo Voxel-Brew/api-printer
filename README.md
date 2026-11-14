@@ -28,9 +28,8 @@ available without signing credentials.
 ### GitHub Actions
 
 1. Run **Prepare release** (`release-prepare.yml`) on `master`. It creates
-   `release/A.B.x`, pins API dependencies to exact releases, and advances master
-   to the next minor snapshot using an atomic push. Optional `model-version` and
-   `export-version` inputs override dependency versions. Otherwise their current
+   `release/A.B.x`, pins the BOM to an exact release, and advances master
+   to the next minor snapshot using an atomic push. Optional `bom-version` selects the released BOM. Otherwise the current BOM
    version without `-SNAPSHOT` is used; that release must exist in Central before
    publishing this API.
 2. Run **Publish to prod** (`release.yml`) on that release branch with the default
@@ -42,6 +41,8 @@ available without signing credentials.
    Central Portal. Only after Central reports `PUBLISHED` does it create the
    GitHub release and advance the release branch to the next patch snapshot.
 
+Publish a release BOM to Maven Central before releasing APIs that import it.
+The BOM contains constraints only, so it can precede its managed artifacts.
 For the first API release, publish **model**, then **export/import/printer**, then
 **slicer**. Slicer depends on model and export. Allow Central's public repository
 to propagate each dependency before releasing its consumers. API versions remain
@@ -88,3 +89,12 @@ bumps into master.
 
 References: [Central requirements](https://central.sonatype.org/publish/requirements/)
 and [Gradle Central publishing plugin](https://vanniktech.github.io/gradle-maven-publish-plugin/central/).
+
+## BOM alignment
+
+This build imports `dev.voxelbrew:bom` using `bomVersion` in `gradle.properties`.
+API dependencies omit versions; `projectVersion` remains this API's own release version.
+The BOM is metadata only and adds no application libraries.
+For local development, publish `../../BOM` to Maven local first and pass
+`-PuseMavenLocal=true`, or use the parent workspace composite.
+Standalone builds require the selected BOM to be published before use.

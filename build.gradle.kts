@@ -30,6 +30,7 @@ tasks.withType<JavaCompile>().configureEach {
 apply(from = "gradle/lombok.gradle.kts")
 
 dependencies {
+    api(platform("dev.voxelbrew:bom:${providers.gradleProperty("bomVersion").get()}"))
     testImplementation(platform("org.junit:junit-bom:5.12.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
@@ -115,7 +116,7 @@ val verifyApiDependencies by
             for (scope in listOf("compileClasspath", "runtimeClasspath")) {
                 configurations[scope].incoming.resolutionResult.allComponents.forEach {
                     val group = it.moduleVersion?.group
-                    check(group != "dev.voxelbrew") {
+                    check(group != "dev.voxelbrew" || it.moduleVersion?.name == "bom") {
                         "API must not depend on application modules: ${it.id}"
                     }
                 }
@@ -181,7 +182,7 @@ publishing {
     }
 }
 
-dependencies { api("dev.voxelbrew.api:model:${providers.gradleProperty("modelVersion").get()}") }
+dependencies { api("dev.voxelbrew.api:model") }
 
 // Opt-in signing keeps GitHub snapshots and local development credential-free.
 val centralRelease = providers.gradleProperty("centralRelease").orNull == "true"

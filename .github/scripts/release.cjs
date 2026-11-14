@@ -12,7 +12,7 @@ function replaceVersion(text, next) {
   return text.replace(/^projectVersion=.*$/m, `projectVersion=${next}`);
 }
 function pinDependencies(text, name, env = process.env) {
-  const used = name === 'model' ? [] : name === 'slicer' ? ['model', 'export'] : ['model'];
+  const used = ['bom'];
   for (const dependency of used) {
     const pattern = new RegExp(`^${dependency}Version=(.+)\\r?$`, 'm');
     const match = text.match(pattern);

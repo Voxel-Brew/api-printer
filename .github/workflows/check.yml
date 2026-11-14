@@ -18,6 +18,11 @@ jobs:
           path: api
       - uses: actions/checkout@v4
         with:
+          repository: Voxel-Brew/BOM
+          ref: main
+          path: dependencies/bom
+      - uses: actions/checkout@v4
+        with:
           repository: Voxel-Brew/api-model
           ref: master
           path: dependencies/model
@@ -29,7 +34,7 @@ jobs:
         with:
           node-version: "24"
       - uses: gradle/actions/setup-gradle@v4
-      - run: ./gradlew check --include-build ../dependencies/model
+      - run: ./gradlew check --include-build ../dependencies/bom --include-build ../dependencies/model
         working-directory: api
   publish:
     needs: verify
