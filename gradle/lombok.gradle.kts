@@ -1,21 +1,21 @@
 // Lombok is a source-generation tool, never an application runtime dependency.
-val lombokVersion = "1.18.48"
-val slf4jVersion = "2.0.20"
+
+val dependencyBom = "dev.voxelbrew:bom:${providers.gradleProperty("bomVersion").get()}"
 
 extensions.getByType<SourceSetContainer>().configureEach {
-    dependencies.add(compileOnlyConfigurationName, "org.projectlombok:lombok:$lombokVersion")
-    dependencies.add(
-        annotationProcessorConfigurationName,
-        "org.projectlombok:lombok:$lombokVersion",
-    )
+    // Processor paths and custom source sets do not inherit the main API platform.
+    dependencies.add(compileOnlyConfigurationName, dependencies.platform(dependencyBom))
+    dependencies.add(annotationProcessorConfigurationName, dependencies.platform(dependencyBom))
+    dependencies.add(compileOnlyConfigurationName, "org.projectlombok:lombok")
+    dependencies.add(annotationProcessorConfigurationName, "org.projectlombok:lombok")
 }
 
 dependencies {
-    add("implementation", "org.slf4j:slf4j-api:$slf4jVersion")
-    add("testRuntimeOnly", "org.slf4j:slf4j-jdk14:$slf4jVersion")
+    add("implementation", "org.slf4j:slf4j-api")
+    add("testRuntimeOnly", "org.slf4j:slf4j-jdk14")
     // Applications choose the backend; published libraries leave that choice to their host.
     if (project.name in listOf("cli", "gui")) {
-        add("runtimeOnly", "org.slf4j:slf4j-jdk14:$slf4jVersion")
+        add("runtimeOnly", "org.slf4j:slf4j-jdk14")
     }
 }
 
