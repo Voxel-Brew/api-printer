@@ -1,7 +1,7 @@
-package dev.voxelbrew.printer.api;
+package dev.voxelbrew.api.printer;
 
-import dev.voxelbrew.engine.model.CadDocument;
-import dev.voxelbrew.engine.printing.PrintArtifact;
+import dev.voxelbrew.api.model.CadDocument;
+import dev.voxelbrew.api.model.printing.PrintArtifact;
 import java.util.*;
 
 /** Shared compatibility rules, usable by headless clients and UI. */

@@ -1,4 +1,4 @@
-package dev.voxelbrew.printer.api;
+package dev.voxelbrew.api.printer;
 
 import java.util.OptionalDouble;
 
