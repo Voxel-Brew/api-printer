@@ -3,12 +3,13 @@ package dev.voxelbrew.printer.api;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Objects;
+import lombok.NonNull;
 
 /** A physical device, independent of a slicer preset. Secrets are intentionally redacted. */
 public record Printer(
         String id,
         String name,
-        Kind kind,
+        @NonNull Kind kind,
         String profileId,
         String address,
         String serial,
@@ -27,7 +28,6 @@ public record Printer(
         name = name.strip();
         if (name.chars().anyMatch(Character::isISOControl))
             throw new IllegalArgumentException("Printer name cannot contain control characters");
-        Objects.requireNonNull(kind);
         if (profileId == null || !profileId.matches("[a-zA-Z0-9.-]{1,128}"))
             throw new IllegalArgumentException("Printer profile ID is required");
         if (address == null || address.isBlank()) throw new IllegalArgumentException("Device address is required");
