@@ -5,8 +5,8 @@ import dev.voxelbrew.engine.printing.PrintArtifact;
 import java.util.*;
 
 /** Shared compatibility rules, usable by headless clients and UI. */
-public final class PrinterJobs {
-    private PrinterJobs() {}
+@lombok.experimental.UtilityClass
+public class PrinterJobs {
 
     public static Optional<String> incompatibility(CadDocument document, String plate, Printer device) {
         if (document.gcode().getOrDefault(plate, List.of()).isEmpty()) return Optional.of("Slice this plate first");
