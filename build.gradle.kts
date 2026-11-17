@@ -32,6 +32,7 @@ apply(from = "gradle/lombok.gradle.kts")
 dependencies {
     api(platform("dev.voxelbrew:bom:${providers.gradleProperty("bomVersion").get()}"))
     testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation("org.assertj:assertj-core")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 

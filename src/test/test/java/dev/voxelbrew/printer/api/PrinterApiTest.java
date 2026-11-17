@@ -1,6 +1,6 @@
 package dev.voxelbrew.printer.api;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 import dev.voxelbrew.engine.model.CadDocument;
 import dev.voxelbrew.engine.printing.PrintArtifact;
@@ -25,9 +25,9 @@ class PrinterApiTest {
                 "",
                 "",
                 "");
-        assertEquals("Lab Klipper", printer.name());
-        assertEquals("Lab Klipper", printer.toString());
-        assertEquals("internal-uuid", printer.id());
+        assertThat(printer.name()).isEqualTo("Lab Klipper");
+        assertThat(printer.toString()).isEqualTo("Lab Klipper");
+        assertThat(printer.id()).isEqualTo("internal-uuid");
     }
 
     @Test
@@ -41,14 +41,11 @@ class PrinterApiTest {
                 "http://moonraker.local?key=secret",
                 "http://moonraker.local:abc",
                 "http://moonraker.local:7125/ bad")) {
-            assertThrows(
-                    IllegalArgumentException.class,
-                    () -> new Printer("device", "Device", Printer.Kind.MOONRAKER, "profile", address, "", "", ""),
-                    address);
+            assertThatThrownBy(() ->
+                            new Printer("device", "Device", Printer.Kind.MOONRAKER, "profile", address, "", "", ""))
+                    .isInstanceOf(IllegalArgumentException.class);
         }
-        assertEquals(
-                "https://moonraker.local:7125",
-                new Printer(
+        assertThat(new Printer(
                                 "device",
                                 "Device",
                                 Printer.Kind.MOONRAKER,
@@ -57,7 +54,8 @@ class PrinterApiTest {
                                 "",
                                 "",
                                 "")
-                        .address());
+                        .address())
+                .isEqualTo("https://moonraker.local:7125");
         for (var address : List.of(
                 "256.1.1.1",
                 "192.168.1",
@@ -66,17 +64,22 @@ class PrinterApiTest {
                 "printer.local:8883",
                 "http://printer.local",
                 "printer local")) {
-            assertThrows(
-                    IllegalArgumentException.class,
-                    () -> new Printer(
-                            "device", "Device", Printer.Kind.BAMBU, "profile", address, "serial", "model", "code"),
-                    address);
+            assertThatThrownBy(() -> new Printer(
+                            "device", "Device", Printer.Kind.BAMBU, "profile", address, "serial", "model", "code"))
+                    .isInstanceOf(IllegalArgumentException.class);
         }
         for (var address : List.of("192.168.1.25", "printer.local", "localhost")) {
-            assertEquals(
-                    address,
-                    new Printer("device", "Device", Printer.Kind.BAMBU, "profile", address, "serial", "model", "code")
-                            .address());
+            assertThat(new Printer(
+                                    "device",
+                                    "Device",
+                                    Printer.Kind.BAMBU,
+                                    "profile",
+                                    address,
+                                    "serial",
+                                    "model",
+                                    "code")
+                            .address())
+                    .isEqualTo(address);
         }
     }
 
@@ -92,7 +95,8 @@ class PrinterApiTest {
                 "serial",
                 "Bambu Lab A1",
                 "code");
-        assertTrue(PrinterJobs.incompatibility(doc, "plate", device).isPresent());
+        assertThat(PrinterJobs.incompatibility(doc, "plate", device).isPresent())
+                .isTrue();
         var artifact = PrintArtifact.of(
                 "gcode.3mf",
                 new byte[] {1, 2, 3},
@@ -112,7 +116,7 @@ class PrinterApiTest {
                         "target_profile",
                         "generic-marlin-200-0.4"));
         doc = doc.withPrintArtifacts(Map.of("plate", artifact));
-        assertTrue(PrinterJobs.incompatibility(doc, "plate", device).isEmpty());
+        assertThat(PrinterJobs.incompatibility(doc, "plate", device).isEmpty()).isTrue();
         var widerNozzle = new CadDocument("test", List.of(), 0, doc.printSetup().withNozzle(0.6))
                 .withGcode(Map.of("plate", List.of("G1 X1")))
                 .withPrintArtifacts(Map.of(
@@ -135,24 +139,28 @@ class PrinterApiTest {
                                         "a1",
                                         "target_profile",
                                         "generic-marlin-200-0.4"))));
-        assertTrue(PrinterJobs.incompatibility(widerNozzle, "plate", device).isEmpty());
-        assertTrue(
-                PrinterJobs.incompatibility(widerNozzle.withPrintArtifacts(Map.of("plate", artifact)), "plate", device)
-                        .isPresent());
-        assertTrue(PrinterJobs.incompatibility(
-                        doc,
-                        "plate",
-                        new Printer(
-                                "other",
-                                "Other",
-                                Printer.Kind.BAMBU,
-                                "generic-marlin-200-0.4",
-                                "localhost",
-                                "serial",
-                                "P1S",
-                                "code"))
-                .isPresent());
-        assertTrue(PrinterJobs.incompatibility(doc, "missing", device).isPresent());
+        assertThat(PrinterJobs.incompatibility(widerNozzle, "plate", device).isEmpty())
+                .isTrue();
+        assertThat(PrinterJobs.incompatibility(
+                                widerNozzle.withPrintArtifacts(Map.of("plate", artifact)), "plate", device)
+                        .isPresent())
+                .isTrue();
+        assertThat(PrinterJobs.incompatibility(
+                                doc,
+                                "plate",
+                                new Printer(
+                                        "other",
+                                        "Other",
+                                        Printer.Kind.BAMBU,
+                                        "generic-marlin-200-0.4",
+                                        "localhost",
+                                        "serial",
+                                        "P1S",
+                                        "code"))
+                        .isPresent())
+                .isTrue();
+        assertThat(PrinterJobs.incompatibility(doc, "missing", device).isPresent())
+                .isTrue();
     }
 
     @Test
@@ -171,15 +179,16 @@ class PrinterApiTest {
                 "");
         var profileJob = PrintTarget.attach(null, lines, document.printSetup());
         var saved = document.withGcode(Map.of(plate, lines)).withPrintArtifacts(Map.of(plate, profileJob));
-        assertTrue(PrinterJobs.incompatibility(saved, plate, printer).isPresent());
+        assertThat(PrinterJobs.incompatibility(saved, plate, printer).isPresent())
+                .isTrue();
 
         var connected = document.printSetup().withPrintTarget(printer.id());
         var printerJob = PrintTarget.attach(null, lines, connected);
         saved = saved.withPrintArtifacts(Map.of(plate, printerJob));
-        assertTrue(PrinterJobs.incompatibility(saved, plate, printer).isEmpty());
+        assertThat(PrinterJobs.incompatibility(saved, plate, printer).isEmpty()).isTrue();
         var other = new Printer(
                 "other", "Other", Printer.Kind.MOONRAKER, printer.profileId(), "http://localhost:7126", "", "", "");
-        assertTrue(PrinterJobs.incompatibility(saved, plate, other).isPresent());
+        assertThat(PrinterJobs.incompatibility(saved, plate, other).isPresent()).isTrue();
     }
 
     @Test
@@ -188,9 +197,7 @@ class PrinterApiTest {
         Files.writeString(
                 source,
                 "import dev.voxelbrew.printer.api.*; public class Consumer { public PrinterStatus.State state(PrinterSession session) throws java.io.IOException { return session.status().state(); } }");
-        assertEquals(
-                0,
-                javax.tools.ToolProvider.getSystemJavaCompiler()
+        assertThat(javax.tools.ToolProvider.getSystemJavaCompiler()
                         .run(
                                 null,
                                 null,
@@ -201,6 +208,7 @@ class PrinterApiTest {
                                 "21",
                                 "-classpath",
                                 System.getProperty("java.class.path"),
-                                source.toString()));
+                                source.toString()))
+                .isEqualTo(0);
     }
 }
