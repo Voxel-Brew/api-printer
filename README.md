@@ -4,7 +4,7 @@
 
 Java 21 and the committed Gradle wrapper are required. Run `./gradlew check`
 (`.\gradlew.bat check` on Windows). This MIT library publishes as
-`dev.voxelbrew.api:printer:0.1.0-SNAPSHOT`; Java package names remain unchanged.
+`dev.voxelbrew.api:printer:0.1.0-SNAPSHOT`.
 Use `./gradlew publishToMavenLocal` for local publication. Consumers opt in with
 `-PuseMavenLocal=true`. `publishApiPublicationToGitHubPackagesRepository` publishes remotely.
 
@@ -98,3 +98,11 @@ The BOM is metadata only and adds no application libraries.
 For local development, publish `../../BOM` to Maven local first and pass
 `-PuseMavenLocal=true`, or use the parent workspace composite.
 Standalone builds require the selected BOM to be published before use.
+
+## Package migration
+
+Public contracts now live under `dev.voxelbrew.api.printer`.
+This is a source and binary incompatible package rename. Update imports and service
+registration filenames, then recompile consumers and plugin providers against the
+matching model, import, export, printer, and slicer API snapshots. Maven coordinates
+and release versions are unchanged; deploy the matching application and APIs together.

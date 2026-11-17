@@ -1,10 +1,10 @@
-package dev.voxelbrew.printer.api;
+package dev.voxelbrew.api.printer;
 
 import static org.assertj.core.api.Assertions.*;
 
-import dev.voxelbrew.engine.model.CadDocument;
-import dev.voxelbrew.engine.printing.PrintArtifact;
-import dev.voxelbrew.engine.printing.PrintTarget;
+import dev.voxelbrew.api.model.CadDocument;
+import dev.voxelbrew.api.model.printing.PrintArtifact;
+import dev.voxelbrew.api.model.printing.PrintTarget;
 import java.nio.file.*;
 import java.util.*;
 import org.junit.jupiter.api.Test;
@@ -196,7 +196,7 @@ class PrinterApiTest {
         Path source = directory.resolve("Consumer.java");
         Files.writeString(
                 source,
-                "import dev.voxelbrew.printer.api.*; public class Consumer { public PrinterStatus.State state(PrinterSession session) throws java.io.IOException { return session.status().state(); } }");
+                "import dev.voxelbrew.api.printer.*; public class Consumer { public PrinterStatus.State state(PrinterSession session) throws java.io.IOException { return session.status().state(); } }");
         assertThat(javax.tools.ToolProvider.getSystemJavaCompiler()
                         .run(
                                 null,

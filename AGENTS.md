@@ -3,7 +3,7 @@
 ## Project Structure & Module Organization
 
 This repository contains the Java 21 public printer API. Production contracts live in
-`src/main/java/dev/voxelbrew/printer/api`; keep implementation, transport, and UI concerns out of
+`src/main/java/dev/voxelbrew/api/printer`; keep implementation, transport, and UI concerns out of
 this module. Version metadata is in `src/main/resources`. Unit tests use the intentionally custom
 `src/test/test/java` tree. Add integration and end-to-end tests under
 `src/test/integrationTest/java` and `src/test/e2eTest/java`. Gradle build logic is split between
@@ -28,7 +28,7 @@ disabled.
 Spotless enforces Palantir Java Format and ktfmt; do not hand-align formatted code. Java compilation
 uses UTF-8, `-Xlint:all`, and treats warnings as errors. Follow standard Java naming: packages are
 lowercase, types use `UpperCamelCase`, methods and fields use `lowerCamelCase`, and constants use
-`UPPER_SNAKE_CASE`. Keep public packages under `dev.voxelbrew.printer.api`. Lombok is permitted only
+`UPPER_SNAKE_CASE`. Keep public packages under `dev.voxelbrew.api.printer`. Lombok is permitted only
 as a compile-time source generator.
 
 ## Testing Guidelines
