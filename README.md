@@ -1,108 +1,49 @@
-# VoxelBrew printer API
+# VoxelBrew Printer API
 
-## Standalone build and publication
+[![Build](https://github.com/Voxel-Brew/api-printer/actions/workflows/check.yml/badge.svg?branch=master)](https://github.com/Voxel-Brew/api-printer/actions/workflows/check.yml?query=branch%3Amaster)
+[![Maven Central](https://img.shields.io/maven-central/v/dev.voxelbrew.api/printer?label=Maven%20Central)](https://central.sonatype.com/artifact/dev.voxelbrew.api/printer)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Java 21 and the committed Gradle wrapper are required. Run `./gradlew check`
-(`.\gradlew.bat check` on Windows). This MIT library publishes as
-`dev.voxelbrew.api:printer:0.1.0-SNAPSHOT`.
-Use `./gradlew publishToMavenLocal` for local publication. Consumers opt in with
-`-PuseMavenLocal=true`. `publishApiPublicationToGitHubPackagesRepository` publishes remotely.
+Java 21 API for reusable printer drivers, typed connection settings, and hardware
+profiles. Integrate your printer with both the VoxelBrew desktop application and CLI.
 
-GitHub Packages reads use `GITHUB_PACKAGES_USER` and `GITHUB_PACKAGES_TOKEN`
-(a classic token with read:packages), or user Gradle properties
-`githubPackagesUser` and `githubPackagesToken`. Publishing uses `GITHUB_ACTOR`
-and `GITHUB_TOKEN`. Never store credentials in this repository.
+## Main types
 
-The local workspace at `D:\repos\VoxelBrew` includes this checkout at `api/printer`
-and substitutes API dependencies with local sources. API versions are independent
-of the application version. Pushes to master publish snapshots after checks;
-pull requests only verify. Fork PRs use checked-out public API sources for dependencies.
+| Type                  | Purpose                                                                          |
+| --------------------- | -------------------------------------------------------------------------------- |
+| `Driver`              | Submit print artifacts and read printer status using connection settings         |
+| `DriverGui`           | Describe configuration controls, validate input, and build typed settings        |
+| `DriverConfiguration` | Hold immutable connection settings with defensive password copies                |
+| `Printer`             | Save a named device, its driver configuration, and a hardware profile snapshot   |
+| `Profile`             | Describe the bed, excluded zones, tools, dimensions, firmware, and output format |
+| `DriverRegistry`      | Discover drivers from the classpath and installed plugin JARs                    |
 
-## Maven Central releases
+The GUI and CLI share configuration forms and validation. Desktop printer operations
+run on background workers. Submission success means acceptance, not print completion;
+uncertain submissions must not be retried automatically. Documents retain hardware
+settings and target IDs, never driver credentials.
 
-Release coordinates are `dev.voxelbrew.api:ARTIFACT:VERSION`, under the verified
-`dev.voxelbrew` namespace. Snapshots remain in GitHub Packages; releases resolve
-from Maven Central without GitHub credentials. Local `publishToMavenLocal` remains
-available without signing credentials.
+This MIT-licensed repository contains public contracts and value types. Built-in
+drivers, network transports, and file stores live in the application's `printer-impl` module.
 
-### GitHub Actions
+## Use the API
 
-1. Run **Prepare release** (`release-prepare.yml`) on `master`. It creates
-   `release/A.B.x`, pins the BOM to an exact release, and advances master
-   to the next minor snapshot using an atomic push. Optional `bom-version` selects the released BOM. Otherwise the current BOM
-   version without `-SNAPSHOT` is used; that release must exist in Central before
-   publishing this API.
-2. Run **Publish to prod** (`release.yml`) on that release branch with the default
-   `dry-run: true`. This checks and builds a local release candidate without
-   changing remote refs or publishing. It resolves real released dependencies,
-   not composite source substitutions.
-3. Run again with `dry-run: false`. The workflow validates signing credentials,
-   signs the candidate, reserves immutable tag `vA.B.C`, and publishes to the
-   Central Portal. Only after Central reports `PUBLISHED` does it create the
-   GitHub release and advance the release branch to the next patch snapshot.
+Compile your plugin against the API version matching its target VoxelBrew host:
 
-Publish a release BOM to Maven Central before releasing APIs that import it.
-The BOM contains constraints only, so it can precede its managed artifacts.
-For the first API release, publish **model**, then **export/import/printer**, then
-**slicer**. Slicer depends on model and export. Allow Central's public repository
-to propagate each dependency before releasing its consumers. API versions remain
-independent of application versions.
+```kotlin
+dependencies {
+    compileOnly("dev.voxelbrew.api:printer:<version>")
+}
+```
 
-Configure these repository or organization secrets (grant organization secrets
-access to each API repository):
+Register your driver through `META-INF/services`. Hosts obtain `DriverRegistry`
+through `ServiceLoader` and own its lifetime.
 
-| Secret                    | Value                                                         |
-| ------------------------- | ------------------------------------------------------------- |
-| `MAVEN_CENTRAL_USERNAME`  | Central Portal token username, not account login              |
-| `MAVEN_CENTRAL_PASSWORD`  | Central Portal token password                                 |
-| `SIGNING_KEY_ID`          | Signing key ID (short ID for Gradle's legacy key-ring reader) |
-| `SIGNING_KEY_RING_BASE64` | Base64-encoded exported secret key ring                       |
-| `SIGNING_PASSWORD`        | Signing key passphrase; omit for an unprotected key           |
+[Write your own driver](docs/DEV_README.md) for project setup, complete code examples,
+configuration forms, plugin registration, and testing guidance.
 
-The public signing key must be distributed as required by Central and must not
-be expired or revoked. A Portal token authenticates uploads; it does not replace
-the required PGP signatures. Keys are decoded only into the temporary runner
-directory and removed in an always-run cleanup step. No secrets belong in Git.
+## Build
 
-The build supplies binary, sources and Javadoc JARs, checksums, signatures and POM
-metadata (license, developers and SCM). It rejects snapshots and dynamic direct
-dependencies for Central releases. `-PcentralRelease=true` explicitly enables
-signing and Central upload. For local publishing, use `SIGNING_KEY_ID`,
-`SIGNING_PASSWORD`, `SIGNING_KEY_RING` (file path), and Gradle environment variables
-`ORG_GRADLE_PROJECT_mavenCentralUsername` / `ORG_GRADLE_PROJECT_mavenCentralPassword`.
-
-### Recovery
-
-If signing or verification fails, no release tag is pushed. If an upload fails,
-the reserved tag remains and the branch stays at its original snapshot. Rerun
-on the unchanged branch to reuse exactly that tag's candidate; a different tree
-or source commit is rejected. Never delete or overwrite a published version.
-
-If Central already published but the workflow failed before advancing the branch,
-do not upload again. Check out the same source, run `node .github/scripts/release.cjs
-candidate` with the original workflow's `GITHUB_REF_NAME`, `GITHUB_SHA` and
-`GITHUB_REPOSITORY`, verify the existing Central release, then run `node
-.github/scripts/release.cjs finish` with an authorized `GH_TOKEN`. This final step
-creates the GitHub release if absent and advances the branch. Port release fixes
-back to master through normal reviewed changes; do not merge release version
-bumps into master.
-
-References: [Central requirements](https://central.sonatype.org/publish/requirements/)
-and [Gradle Central publishing plugin](https://vanniktech.github.io/gradle-maven-publish-plugin/central/).
-
-## BOM alignment
-
-This build imports `dev.voxelbrew:bom` using `bomVersion` in `gradle.properties`.
-API dependencies omit versions; `projectVersion` remains this API's own release version.
-The BOM is metadata only and adds no application libraries.
-For local development, publish `../../BOM` to Maven local first and pass
-`-PuseMavenLocal=true`, or use the parent workspace composite.
-Standalone builds require the selected BOM to be published before use.
-
-## Package migration
-
-Public contracts now live under `dev.voxelbrew.api.printer`.
-This is a source and binary incompatible package rename. Update imports and service
-registration filenames, then recompile consumers and plugin providers against the
-matching model, import, export, printer, and slicer API snapshots. Maven coordinates
-and release versions are unchanged; deploy the matching application and APIs together.
+Use Java 21 and the checked-in wrapper: `./gradlew check` on Linux/macOS or
+`.\gradlew.bat check` on Windows. For coordinated API changes, use the VoxelBrew
+workspace composite described in the developer guide.

@@ -182,7 +182,10 @@ publishing {
     }
 }
 
-dependencies { api("dev.voxelbrew.api:model") }
+dependencies {
+    api("dev.voxelbrew.api:model")
+    implementation("org.slf4j:slf4j-api")
+}
 
 // Opt-in signing keeps GitHub snapshots and local development credential-free.
 val centralRelease = providers.gradleProperty("centralRelease").orNull == "true"
