@@ -1,12 +1,9 @@
-import com.github.spotbugs.snom.Confidence
-import com.github.spotbugs.snom.SpotBugsTask
-
 plugins {
     `java-library`
     `maven-publish`
     id("com.vanniktech.maven.publish.base") version "0.37.0"
     id("com.diffplug.spotless") version "8.11.0"
-    id("com.github.spotbugs") version "6.5.13"
+    id("dev.voxelbrew.spotbugs")
 }
 
 group = "dev.voxelbrew.api"
@@ -63,17 +60,6 @@ for (suite in listOf("integrationTest", "e2eTest")) {
 }
 
 tasks.withType<Test>().configureEach { useJUnitPlatform() }
-
-spotbugs {
-    toolVersion.set("4.10.5")
-    reportLevel.set(Confidence.HIGH)
-    includeFilter.set(file("config/quality/spotbugs-include.xml"))
-}
-
-tasks.withType<SpotBugsTask>().configureEach {
-    enabled = name == "spotbugsMain"
-    reports.create("html") { required.set(true) }
-}
 
 spotless {
     java {
