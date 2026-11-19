@@ -19,7 +19,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: Voxel-Brew/BOM
-          ref: main
           path: dependencies/bom
       - uses: actions/checkout@v4
         with:
@@ -50,6 +49,11 @@ jobs:
       GITHUB_PACKAGES_TOKEN: ${{ secrets.PACKAGES_READ_TOKEN || github.token }}
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: Voxel-Brew/BOM
+          path: .tools/bom
+          persist-credentials: false
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
