@@ -47,9 +47,3 @@ configuration forms, plugin registration, and testing guidance.
 Use Java 21 and the checked-in wrapper: `./gradlew check` on Linux/macOS or
 `.\gradlew.bat check` on Windows. For coordinated API changes, use the VoxelBrew
 workspace composite described in the developer guide.
-
-## SpotBugs
-
-For a standalone checkout, set `VOXELBREW_BOM_DIR` to a VoxelBrew BOM checkout that
-contains `spotbugs-conventions`. The workspace and CI supply the convention automatically.
-Run `./gradlew spotbugsMain` directly or as part of `./gradlew check`.
