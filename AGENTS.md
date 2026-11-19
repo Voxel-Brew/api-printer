@@ -7,7 +7,7 @@ This repository contains the Java 21 public printer API. Production contracts li
 this module. Version metadata is in `src/main/resources`. Unit tests use the intentionally custom
 `src/test/test/java` tree. Add integration and end-to-end tests under
 `src/test/integrationTest/java` and `src/test/e2eTest/java`. Gradle build logic is split between
-`build.gradle.kts` and `gradle/*.gradle.kts`; quality configuration lives in `config/quality`.
+`build.gradle.kts` and `gradle/*.gradle.kts`; SpotBugs configuration comes from the BOM checkout.
 
 ## Build, Test, and Development Commands
 
@@ -37,6 +37,12 @@ Write JUnit Jupiter tests with descriptive behavior names such as
 `deviceAddressesAreValidatedBeforeSaving`. Name test classes `*Test` and keep their package aligned
 with the code under test. Add regression coverage for contract changes and boundary validation. No
 numeric coverage threshold is configured; prioritize observable public-API behavior.
+
+## Pre-commit SpotBugs
+
+Before committing, run `./gradlew spotbugsMain` from this API repository or
+`./gradlew :printer:spotbugsMain` from the composite workspace.
+Use `.\gradlew.bat` in place of `./gradlew` on Windows.
 
 ## Commit & Pull Request Guidelines
 
