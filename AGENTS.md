@@ -84,3 +84,9 @@ Use Lombok where it removes routine Java boilerplate without obscuring a public 
 ## AssertJ in Java tests
 
 Use AssertJ (org.assertj:assertj-core) for assertions in Java unit, integration, and end-to-end tests. Keep JUnit Jupiter for test lifecycle, parameterization, and execution. Declare AssertJ without a version in test dependencies; the BOM manages its version. Prefer ssertThat, ssertThatThrownBy, and ssertThatCode with descriptive failure messages and appropriate numeric tolerances. Do not add new JUnit Assertions calls.
+
+## Service injection
+
+Resolve services by their interfaces at the wiring point and pass them to consumers through
+constructors. Provider classes must not expose static service getters or downcast discovered
+services to their implementations.

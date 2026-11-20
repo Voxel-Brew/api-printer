@@ -8,6 +8,19 @@ import java.util.*;
 import org.junit.jupiter.api.Test;
 
 class PrinterArtifactTest {
+    private java.util.Locale previousDisplayLocale;
+
+    @org.junit.jupiter.api.BeforeEach
+    void selectEnglishForExpectedMessages() {
+        previousDisplayLocale = java.util.Locale.getDefault(java.util.Locale.Category.DISPLAY);
+        java.util.Locale.setDefault(java.util.Locale.Category.DISPLAY, java.util.Locale.ENGLISH);
+    }
+
+    @org.junit.jupiter.api.AfterEach
+    void restoreDisplayLocale() {
+        java.util.Locale.setDefault(java.util.Locale.Category.DISPLAY, previousDisplayLocale);
+    }
+
     private Printer printer() {
         var hardware = PrintProfile.resolve(PrintSetup.empty()).printer();
         var profile = new Profile(
