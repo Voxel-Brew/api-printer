@@ -20,6 +20,24 @@ public record Profile(
         @NonNull String outputFormat,
         boolean genericGcode,
         URI imageReference) {
+    private static void dimension(double value, double maximum, String label) {
+        if (!Double.isFinite(value) || value <= 0 || value > maximum)
+            throw new IllegalArgumentException("Invalid " + label);
+    }
+
+    private static void validatePolygon(List<PrintProfile.Point> points) {
+        if (points.size() < 3) throw new IllegalArgumentException("Polygons require at least three points");
+        double area = 0;
+        for (int i = 0; i < points.size(); i++) {
+            var a = points.get(i);
+            var b = points.get((i + 1) % points.size());
+            if (Math.abs(a.x()) > 10000 || Math.abs(a.y()) > 10000)
+                throw new IllegalArgumentException("Polygon exceeds supported dimensions");
+            area += a.x() * b.y() - b.x() * a.y();
+        }
+        if (Math.abs(area) < 1e-9) throw new IllegalArgumentException("Polygon must have positive area");
+    }
+
     public Profile {
         if (id.isBlank() || name.isBlank() || manufacturer.isBlank() || firmware.isBlank() || outputFormat.isBlank())
             throw new IllegalArgumentException("Profile identity and hardware descriptions must be nonblank");
@@ -40,23 +58,5 @@ public record Profile(
     public PrintProfile.Printer printer() {
         return new PrintProfile.Printer(
                 id, name, nozzleDiameter, bed, excludedZones, usableHeight, firmware, outputFormat);
-    }
-
-    private static void dimension(double value, double maximum, String label) {
-        if (!Double.isFinite(value) || value <= 0 || value > maximum)
-            throw new IllegalArgumentException("Invalid " + label);
-    }
-
-    private static void validatePolygon(List<PrintProfile.Point> points) {
-        if (points.size() < 3) throw new IllegalArgumentException("Polygons require at least three points");
-        double area = 0;
-        for (int i = 0; i < points.size(); i++) {
-            var a = points.get(i);
-            var b = points.get((i + 1) % points.size());
-            if (Math.abs(a.x()) > 10000 || Math.abs(a.y()) > 10000)
-                throw new IllegalArgumentException("Polygon exceeds supported dimensions");
-            area += a.x() * b.y() - b.x() * a.y();
-        }
-        if (Math.abs(area) < 1e-9) throw new IllegalArgumentException("Polygon must have positive area");
     }
 }

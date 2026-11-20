@@ -6,6 +6,26 @@ import java.util.Set;
 /** Stateless device integration. Hosts serialize operations per physical printer on worker threads.
  * Each operation owns and closes its transports. Metadata and form creation must not connect. */
 public interface Driver {
+    sealed interface PrintResult {
+        enum Success implements PrintResult {
+            SUCCESS
+        }
+
+        /** Failed operation. Uncertain submission requires checking the device before another attempt. */
+        record Failure(Set<String> messages, boolean submissionUncertain) implements PrintResult {
+            public Failure(Set<String> messages) {
+                this(messages, false);
+            }
+
+            public Failure {
+                messages = Set.copyOf(messages);
+                if (messages.isEmpty()) {
+                    throw new IllegalArgumentException("Failure messages cannot be empty");
+                }
+            }
+        }
+    }
+
     String id();
 
     /** Human-readable integration name used by hosts for driver selection. */
@@ -27,24 +47,4 @@ public interface Driver {
     DriverStatus readPrinterStatus(DriverConfiguration configuration) throws Exception;
 
     DriverGui gui();
-
-    sealed interface PrintResult {
-        enum Success implements PrintResult {
-            SUCCESS
-        }
-
-        /** Failed operation. Uncertain submission requires checking the device before another attempt. */
-        record Failure(Set<String> messages, boolean submissionUncertain) implements PrintResult {
-            public Failure(Set<String> messages) {
-                this(messages, false);
-            }
-
-            public Failure {
-                messages = Set.copyOf(messages);
-                if (messages.isEmpty()) {
-                    throw new IllegalArgumentException("Failure messages cannot be empty");
-                }
-            }
-        }
-    }
 }
