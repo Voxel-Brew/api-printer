@@ -11,6 +11,8 @@ public final class PrinterTranslationProvider extends PropertiesTranslationProvi
 
     @Override
     protected List<Locale> getLocales() {
-        return List.of(Locale.ENGLISH, Locale.forLanguageTag("pl"));
+        return List.of("en", "pl", "fr", "it", "es", "pt", "de", "sv", "nb", "zh", "ja").stream()
+                .map(Locale::forLanguageTag)
+                .toList();
     }
 }
