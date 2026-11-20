@@ -1,7 +1,12 @@
 package dev.voxelbrew.api.printer;
 
+import dev.voxelbrew.api.i18n.TranslationService;
 import dev.voxelbrew.api.model.printing.PrintArtifact;
 import dev.voxelbrew.api.printer.driver.DriverConfiguration;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.ResourceBundle;
+import java.util.ServiceLoader;
 import java.util.Set;
 import lombok.NonNull;
 
@@ -25,20 +30,39 @@ public record Printer(
      * @return actionable errors, or an empty set when the target metadata matches
      */
     public Set<String> validateArtifact(PrintArtifact artifact) {
-        if (artifact == null) return Set.of("Slice this plate for the selected printer first");
+        String key = artifactError(artifact);
+        if (key == null) return Set.of();
+        return localizedError(
+                key,
+                ServiceLoader.load(TranslationService.class, TranslationService.class.getClassLoader())
+                        .findFirst());
+    }
+
+    /** Validates the artifact using the host's translation service. */
+    public Set<String> validateArtifact(PrintArtifact artifact, @NonNull TranslationService translations) {
+        String key = artifactError(artifact);
+        return key == null ? Set.of() : localizedError(key, Optional.of(translations));
+    }
+
+    private Set<String> localizedError(String key, Optional<TranslationService> translations) {
+        return Set.of(translations.flatMap(service -> service.translate(key)).orElseGet(() -> {
+            var display = Locale.getDefault(Locale.Category.DISPLAY);
+            var locale = display.getLanguage().equals("pl") ? Locale.forLanguageTag("pl") : Locale.ENGLISH;
+            return ResourceBundle.getBundle("dev.voxelbrew.api.printer.messages", locale)
+                    .getString(key);
+        }));
+    }
+
+    private String artifactError(PrintArtifact artifact) {
+        if (artifact == null) return "api.printer.artifact.missing";
         if (!"printer".equals(artifact.metadata().get("target_kind"))
-                || !id.equals(artifact.metadata().get("target_id")))
-            return Set.of(
-                    "This job targets another printer or a standalone profile. Slice it for the selected printer first.");
-        if (!profile.id().equals(artifact.metadata().get("target_profile")))
-            return Set.of("The printer profile changed. Slice this job again.");
+                || !id.equals(artifact.metadata().get("target_id"))) return "api.printer.artifact.target";
+        if (!profile.id().equals(artifact.metadata().get("target_profile"))) return "api.printer.artifact.profile";
         if (artifact.metadata().containsKey("printer")
-                && !profile.id().equals(artifact.metadata().get("printer")))
-            return Set.of("Package machine differs from the configured profile. Slice again.");
+                && !profile.id().equals(artifact.metadata().get("printer"))) return "api.printer.artifact.machine";
         if (artifact.metadata().containsKey("nozzle_mm")
                 && !Double.toString(profile.nozzleDiameter())
-                        .equals(artifact.metadata().get("nozzle_mm")))
-            return Set.of("Package nozzle differs from the configured printer. Slice again.");
-        return Set.of();
+                        .equals(artifact.metadata().get("nozzle_mm"))) return "api.printer.artifact.nozzle";
+        return null;
     }
 }
