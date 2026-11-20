@@ -4,7 +4,6 @@ import dev.voxelbrew.api.i18n.TranslationService;
 import dev.voxelbrew.api.model.printing.PrintArtifact;
 import dev.voxelbrew.api.printer.driver.DriverConfiguration;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -30,22 +29,21 @@ public record Printer(
      * @return actionable errors, or an empty set when the target metadata matches
      */
     public Set<String> validateArtifact(PrintArtifact artifact) {
-        String key = artifactError(artifact);
-        if (key == null) return Set.of();
-        return localizedError(
-                key,
+        return validateArtifact(
+                artifact,
                 ServiceLoader.load(TranslationService.class, TranslationService.class.getClassLoader())
-                        .findFirst());
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalStateException("A TranslationService provider is required")));
     }
 
     /** Validates the artifact using the host's translation service. */
     public Set<String> validateArtifact(PrintArtifact artifact, @NonNull TranslationService translations) {
         String key = artifactError(artifact);
-        return key == null ? Set.of() : localizedError(key, Optional.of(translations));
+        return key == null ? Set.of() : localizedError(key, translations);
     }
 
-    private Set<String> localizedError(String key, Optional<TranslationService> translations) {
-        return Set.of(translations.flatMap(service -> service.translate(key)).orElseGet(() -> {
+    private Set<String> localizedError(String key, TranslationService translations) {
+        return Set.of(translations.translate(key).orElseGet(() -> {
             var display = Locale.getDefault(Locale.Category.DISPLAY);
             var locale = display.getLanguage().equals("pl") ? Locale.forLanguageTag("pl") : Locale.ENGLISH;
             return ResourceBundle.getBundle("dev.voxelbrew.api.printer.messages", locale)
