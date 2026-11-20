@@ -18,8 +18,9 @@ public record Printer(
     public Printer {
         if (!id.matches("[a-zA-Z0-9-]{1,64}")) throw new IllegalArgumentException("Invalid printer ID");
         name = name.strip();
-        if (name.isBlank() || name.length() > 128 || name.chars().anyMatch(Character::isISOControl))
+        if (name.isBlank() || name.length() > 128 || name.chars().anyMatch(Character::isISOControl)) {
             throw new IllegalArgumentException("Printer name must contain 1?128 printable characters");
+        }
         if (driverId.isBlank()) throw new IllegalArgumentException("Driver ID is required");
     }
 
@@ -60,7 +61,9 @@ public record Printer(
                 && !profile.id().equals(artifact.metadata().get("printer"))) return "api.printer.artifact.machine";
         if (artifact.metadata().containsKey("nozzle_mm")
                 && !Double.toString(profile.nozzleDiameter())
-                        .equals(artifact.metadata().get("nozzle_mm"))) return "api.printer.artifact.nozzle";
+                        .equals(artifact.metadata().get("nozzle_mm"))) {
+            return "api.printer.artifact.nozzle";
+        }
         return null;
     }
 }

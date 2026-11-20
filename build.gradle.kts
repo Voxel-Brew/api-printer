@@ -4,6 +4,7 @@ plugins {
     id("com.vanniktech.maven.publish.base") version "0.37.0"
     id("com.diffplug.spotless") version "8.11.0"
     id("dev.voxelbrew.spotbugs")
+    id("dev.voxelbrew.checkstyle")
 }
 
 group = "dev.voxelbrew.api"

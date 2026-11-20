@@ -6,6 +6,7 @@ import java.util.Set;
 /** Stateless device integration. Hosts serialize operations per physical printer on worker threads.
  * Each operation owns and closes its transports. Metadata and form creation must not connect. */
 public interface Driver {
+    /** Outcome returned after submitting a print job to the device. */
     sealed interface PrintResult {
         enum Success implements PrintResult {
             SUCCESS

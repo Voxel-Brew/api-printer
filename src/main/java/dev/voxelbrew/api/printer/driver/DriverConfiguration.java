@@ -19,15 +19,17 @@ public final class DriverConfiguration {
                 .map(entry -> {
                     String key = entry.getKey();
                     Object value = entry.getValue();
-                    if (key == null || key.isBlank())
+                    if (key == null || key.isBlank()) {
                         throw new IllegalArgumentException("Configuration keys must be nonblank");
+                    }
                     if (!(value instanceof String
                             || value instanceof Integer
                             || value instanceof Boolean
                             || value instanceof BigDecimal
                             || value instanceof URI
-                            || value instanceof char[]))
+                            || value instanceof char[])) {
                         throw new IllegalArgumentException("Unsupported configuration value for key: " + key);
+                    }
                     return Map.entry(key, copyValue(value));
                 })
                 .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
