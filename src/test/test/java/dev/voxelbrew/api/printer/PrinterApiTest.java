@@ -10,6 +10,10 @@ import java.util.*;
 import org.junit.jupiter.api.Test;
 
 class PrinterApiTest {
+    private static Profile profile(List<Point> bed, List<List<Point>> zones, double height) {
+        return new Profile("id", "Name", "Maker", bed, zones, height, 0.4, 1.75, 1, "marlin2", "gcode", true, null);
+    }
+
     @Test
     void configurationCopiesSecretsAtEveryBoundary() {
         char[] secret = "sensitive".toCharArray();
@@ -107,9 +111,5 @@ class PrinterApiTest {
                 .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> profile(List.of(new Point(0, 0), new Point(1, 0), new Point(2, 0)), List.of(), 200))
                 .isInstanceOf(IllegalArgumentException.class);
-    }
-
-    private static Profile profile(List<Point> bed, List<List<Point>> zones, double height) {
-        return new Profile("id", "Name", "Maker", bed, zones, height, 0.4, 1.75, 1, "marlin2", "gcode", true, null);
     }
 }

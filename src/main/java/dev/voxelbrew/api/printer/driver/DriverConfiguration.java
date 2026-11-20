@@ -10,6 +10,10 @@ import lombok.NonNull;
 public final class DriverConfiguration {
     private final Map<String, Object> properties;
 
+    private static Object copyValue(Object value) {
+        return value instanceof char[] password ? password.clone() : value;
+    }
+
     public DriverConfiguration(@NonNull Map<String, Object> properties) {
         this.properties = properties.entrySet().stream()
                 .map(entry -> {
@@ -27,10 +31,6 @@ public final class DriverConfiguration {
                     return Map.entry(key, copyValue(value));
                 })
                 .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
-    }
-
-    private static Object copyValue(Object value) {
-        return value instanceof char[] password ? password.clone() : value;
     }
 
     /** Returns a detached snapshot for persistence. Contains secrets; never log it. */

@@ -61,9 +61,24 @@ for (suite in listOf("integrationTest", "e2eTest")) {
 
 tasks.withType<Test>().configureEach { useJUnitPlatform() }
 
+val checkJavaMemberOrder by
+    tasks.registering(JavaExec::class) {
+        group = "verification"
+        description = "Check Java member declaration order."
+        javaLauncher.set(
+            project.extensions.getByType<JavaToolchainService>().launcherFor {
+                languageVersion.set(JavaLanguageVersion.of(21))
+            }
+        )
+        mainClass.set(layout.projectDirectory.file("gradle/JavaMemberOrder.java").asFile.path)
+        args("src", "gradle")
+    }
+
+tasks.named("check") { dependsOn(checkJavaMemberOrder) }
+
 spotless {
     java {
-        target("src/**/*.java")
+        target("src/**/*.java", "gradle/JavaMemberOrder.java")
         palantirJavaFormat("2.103.0")
         trimTrailingWhitespace()
         endWithNewline()

@@ -31,6 +31,11 @@ lowercase, types use `UpperCamelCase`, methods and fields use `lowerCamelCase`, 
 `UPPER_SNAKE_CASE`. Keep public packages under `dev.voxelbrew.api.printer`. Lombok is permitted only
 as a compile-time source generator.
 
+Run `./gradlew checkJavaMemberOrder` to check Java source declaration order. The `check` and
+`build` tasks include it. Within each class, start with static final fields, then other static fields,
+final instance fields, other instance fields, static nested types, inner classes, static methods,
+constructors, and instance methods. Preserve Java initialization order when moving fields.
+
 ## Testing Guidelines
 
 Write JUnit Jupiter tests with descriptive behavior names such as
