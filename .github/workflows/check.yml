@@ -6,6 +6,10 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+  packages: read
+env:
+  GITHUB_PACKAGES_USER: ${{ vars.PACKAGES_USER || github.actor }}
+  GITHUB_PACKAGES_TOKEN: ${{ secrets.PACKAGES_READ_TOKEN || github.token }}
 concurrency:
   group: api-${{ github.ref }}
   cancel-in-progress: false
@@ -14,30 +18,22 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-        with:
-          path: api
       - uses: actions/checkout@v4
         with:
           repository: Voxel-Brew/BOM
-          path: dependencies/bom
-      - uses: actions/checkout@v4
-        with:
-          repository: Voxel-Brew/api-model
-          ref: master
-          path: dependencies/model
+          path: .tools/bom
+          persist-credentials: false
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "21"
       - uses: gradle/actions/setup-gradle@v4
       - name: Check Java member order
-        run: ./gradlew checkJavaMemberOrder --include-build ../dependencies/bom --include-build ../dependencies/model
-        working-directory: api
+        run: ./gradlew --refresh-dependencies checkJavaMemberOrder
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
-      - run: ./gradlew check --include-build ../dependencies/bom --include-build ../dependencies/model -x :checkJavaMemberOrder
-        working-directory: api
+      - run: ./gradlew --refresh-dependencies check -x :checkJavaMemberOrder
   publish:
     needs: verify
     if: github.ref == 'refs/heads/master' && github.event_name != 'pull_request'
@@ -48,8 +44,6 @@ jobs:
     env:
       GITHUB_ACTOR: ${{ github.actor }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      GITHUB_PACKAGES_USER: ${{ vars.PACKAGES_USER || github.actor }}
-      GITHUB_PACKAGES_TOKEN: ${{ secrets.PACKAGES_READ_TOKEN || github.token }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/checkout@v4
@@ -64,4 +58,4 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - name: Require a snapshot version
         run: grep -Eq '^projectVersion=.+-SNAPSHOT$' gradle.properties
-      - run: ./gradlew publishApiPublicationToGitHubPackagesRepository
+      - run: ./gradlew --refresh-dependencies publishApiPublicationToGitHubPackagesRepository
