@@ -44,7 +44,7 @@ public record Printer(
     }
 
     private Set<String> localizedError(String key, TranslationService translations) {
-        return Set.of(translations.translate(key).orElseGet(() -> {
+        return Set.of(translations.tryTranslate(key).orElseGet(() -> {
             var display = Locale.getDefault(Locale.Category.DISPLAY);
             var locale = display.getLanguage().equals("pl") ? Locale.forLanguageTag("pl") : Locale.ENGLISH;
             return ResourceBundle.getBundle("dev.voxelbrew.api.printer.messages", locale)
