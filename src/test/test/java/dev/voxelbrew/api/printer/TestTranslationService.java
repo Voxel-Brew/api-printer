@@ -29,7 +29,7 @@ public final class TestTranslationService implements TranslationService {
     }
 
     @Override
-    public Optional<String> translate(String key, Object... arguments) {
+    public Optional<String> tryTranslate(String key, Object... arguments) {
         return Optional.empty();
     }
 
