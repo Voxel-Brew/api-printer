@@ -7,7 +7,7 @@ This repository contains the Java 21 public printer API. Production contracts li
 this module. Version metadata is in `src/main/resources`. Unit tests use the intentionally custom
 `src/test/test/java` tree. Add integration and end-to-end tests under
 `src/test/integrationTest/java` and `src/test/e2eTest/java`. Gradle build logic is split between
-`build.gradle.kts` and `gradle/*.gradle.kts`; SpotBugs configuration comes from the BOM checkout.
+`build.gradle.kts` and `gradle/*.gradle.kts`; SpotBugs configuration comes from the public BOM master branch.
 
 ## Build, Test, and Development Commands
 
@@ -45,8 +45,8 @@ numeric coverage threshold is configured; prioritize observable public-API behav
 
 ## Pre-commit SpotBugs
 
-For a standalone checkout, set `VOXELBREW_BOM_DIR` to a VoxelBrew BOM checkout that
-contains `spotbugs-conventions`. The composite workspace and CI supply it automatically.
+The build resolves VoxelBrew artifacts through Maven and fetches shared quality policy
+from the public BOM master branch.
 
 Before committing, run `./gradlew spotbugsMain` from this API repository or
 `./gradlew :printer:spotbugsMain` from the composite workspace.

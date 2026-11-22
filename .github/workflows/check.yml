@@ -18,11 +18,6 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/checkout@v4
-        with:
-          repository: Voxel-Brew/BOM
-          path: .tools/bom
-          persist-credentials: false
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -46,11 +41,6 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/checkout@v4
-        with:
-          repository: Voxel-Brew/BOM
-          path: .tools/bom
-          persist-credentials: false
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
