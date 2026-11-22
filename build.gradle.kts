@@ -1,11 +1,15 @@
+import java.util.Properties
+
 plugins {
     `java-library`
     `maven-publish`
     id("com.vanniktech.maven.publish.base") version "0.37.0"
     id("com.diffplug.spotless") version "8.11.0"
-    id("dev.voxelbrew.spotbugs")
-    id("dev.voxelbrew.checkstyle")
 }
+
+val qualityPolicy = "https://raw.githubusercontent.com/Voxel-Brew/BOM/master/quality"
+
+apply(from = "$qualityPolicy/analysis.gradle")
 
 group = "dev.voxelbrew.api"
 
@@ -71,27 +75,40 @@ val checkJavaMemberOrder by
                 languageVersion.set(JavaLanguageVersion.of(21))
             }
         )
-        mainClass.set(layout.projectDirectory.file("gradle/JavaMemberOrder.java").asFile.path)
+        val checker = resources.text.fromUri("$qualityPolicy/JavaMemberOrder.java")
+        jvmArgs("--source", "21")
+        mainClass.set(providers.provider { checker.asFile().absolutePath })
         args("src", "gradle")
     }
 
 tasks.named("check") { dependsOn(checkJavaMemberOrder) }
 
+val formatterPolicy =
+    Properties().apply {
+        resources.text.fromUri("$qualityPolicy/spotless.properties").asReader().use { load(it) }
+    }
+
 spotless {
     java {
-        target("src/**/*.java", "gradle/JavaMemberOrder.java")
-        palantirJavaFormat("2.103.0")
+        target("src/**/*.java")
+        palantirJavaFormat(formatterPolicy.getProperty("palantirJavaFormat"))
         trimTrailingWhitespace()
         endWithNewline()
     }
     kotlinGradle {
         target("*.gradle.kts", "gradle/*.gradle.kts")
-        ktfmt("0.59").kotlinlangStyle()
+        ktfmt(formatterPolicy.getProperty("ktfmt")).kotlinlangStyle()
         endWithNewline()
     }
     format("docs") {
         target("*.md", ".github/**/*.yml")
-        prettier("3.6.2").config(mapOf("printWidth" to 100, "proseWrap" to "preserve"))
+        prettier(formatterPolicy.getProperty("prettier"))
+            .config(
+                mapOf(
+                    "printWidth" to formatterPolicy.getProperty("printWidth").toInt(),
+                    "proseWrap" to formatterPolicy.getProperty("proseWrap"),
+                )
+            )
         endWithNewline()
     }
     format("text") {
