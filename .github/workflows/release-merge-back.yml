@@ -3,23 +3,18 @@ on:
   push:
     branches: ["release/*"]
   workflow_dispatch:
-    inputs:
-      branch:
-        description: Release branch to merge back
-        required: true
-        type: string
 permissions:
   contents: write
   pull-requests: write
 concurrency:
-  group: merge-back-${{ inputs.branch || github.ref_name }}
+  group: merge-back-${{ github.ref_name }}
   cancel-in-progress: false
 jobs:
   merge:
-    if: github.event_name != 'push' || !github.event.deleted
+    if: startsWith(github.ref, 'refs/heads/release/') && (github.event_name != 'push' || !github.event.deleted)
     runs-on: ubuntu-24.04
     env:
-      RELEASE_BRANCH: ${{ inputs.branch || github.ref_name }}
+      RELEASE_BRANCH: ${{ github.ref_name }}
       GH_TOKEN: ${{ secrets.RELEASE_PR_TOKEN || github.token }}
     steps:
       - uses: actions/checkout@v4
