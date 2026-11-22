@@ -11,6 +11,8 @@ val qualityPolicy = "https://raw.githubusercontent.com/Voxel-Brew/BOM/master/qua
 
 apply(from = "$qualityPolicy/analysis.gradle")
 
+apply(from = "$qualityPolicy/binary-compatibility.gradle")
+
 group = "dev.voxelbrew.api"
 
 version = providers.gradleProperty("projectVersion").get()
