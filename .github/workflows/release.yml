@@ -17,6 +17,7 @@ jobs:
     timeout-minutes: 90
     permissions:
       contents: write
+      actions: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -76,6 +77,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: node .github/scripts/release.cjs finish
+      - name: Schedule merge-back
+        if: ${{ !inputs.dry-run }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run release-merge-back.yml --ref "$GITHUB_REF_NAME"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
