@@ -105,7 +105,7 @@ to Maven Central, create the GitHub release and advance the patch snapshot.
 Release-branch pushes and completed publications run `release-merge-back.yml`.
 It proposes release fixes in a PR against master, retaining master's
 `projectVersion`. Resolve other conflicts through normal review. To retry,
-dispatch merge-back on master with the release branch name.
+dispatch merge-back on the release branch.
 
 Allow GitHub Actions to create pull requests, or configure `RELEASE_PR_TOKEN`
 with contents and pull-request write access for the automation branches. Use a
