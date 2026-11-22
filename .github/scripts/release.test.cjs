@@ -25,7 +25,7 @@ test('prepare and candidate preserve immutable refs and allow upload retries', (
     const base = git('rev-parse','HEAD');
     const common = {GITHUB_REPOSITORY:'Voxel-Brew/api-export'};
     run(process.execPath, [script,'prepare'], work, {...common,GITHUB_REF_NAME:'master',GITHUB_SHA:base});
-    assert.match(git('show','HEAD:gradle.properties'), /projectVersion=0.2.0-SNAPSHOT/);
+    assert.match(git('show','origin/automation/next-minor/0.1.x:gradle.properties'), /projectVersion=0.2.0-SNAPSHOT/);
     git('fetch','origin','release/0.1.x');
     const source = git('rev-parse','FETCH_HEAD');
     assert.match(git('show',`${source}:gradle.properties`), /bomVersion=0.1.0$/);
@@ -38,7 +38,8 @@ test('prepare and candidate preserve immutable refs and allow upload retries', (
     run(process.execPath,[script,'candidate'],work,releaseEnv);
     assert.equal(git('rev-parse','HEAD'), tagged);
     assert.equal(git('ls-remote','--heads','origin','release/0.1.x').split(/\s/)[0],source);
-    assert.throws(() => run(process.execPath,[script,'prepare'],work,{...common,GITHUB_REF_NAME:'master',GITHUB_SHA:base}));
+    assert.equal(git('rev-parse','origin/master'), base);
+    run(process.execPath,[script,'prepare'],work,{...common,GITHUB_REF_NAME:'master',GITHUB_SHA:base});
   } finally {
     assert(path.resolve(directory).startsWith(path.resolve(os.tmpdir()) + path.sep));
     fs.rmSync(directory,{recursive:true,force:true});

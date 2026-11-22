@@ -7,27 +7,34 @@ on:
         type: string
 permissions:
   contents: write
-  actions: write
+  pull-requests: write
 concurrency:
   group: api-release-mutations
   cancel-in-progress: false
 jobs:
   prepare:
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.RELEASE_PR_TOKEN || github.token }}
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
       - run: node --test .github/scripts/release.test.cjs
-      - name: Create release branch and advance master
+      - name: Create release and next-minor branches
+        id: prepare
         env:
           BOM_VERSION: ${{ inputs.bom-version }}
         run: node .github/scripts/release.cjs prepare
-      - name: Explicitly check the new master snapshot
+      - name: Open next-minor pull request
         env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh workflow run check.yml --ref master
+          GH_TOKEN: ${{ secrets.RELEASE_PR_TOKEN || github.token }}
+          BRANCH: ${{ steps.prepare.outputs.branch }}
+        run: |
+          if [[ -z "$(gh pr list --base master --head "$BRANCH" --json number --jq '.[0].number // empty')" ]]; then
+            gh pr create --base master --head "$BRANCH" --title "Advance master to the next minor snapshot" --body "Begin development after cutting the release branch."
+          fi

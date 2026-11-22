@@ -90,3 +90,20 @@ Use AssertJ (org.assertj:assertj-core) for assertions in Java unit, integration,
 Resolve services by their interfaces at the wiring point and pass them to consumers through
 constructors. Provider classes must not expose static service getters or downcast discovered
 services to their implementations.
+
+## Release workflows
+
+Dispatch **Prepare release** on `master` to cut `release/A.B.x` and open the
+next-minor snapshot pull request. Merge that PR through normal branch protection.
+Dispatch `release.yml` on the release branch, first with the default dry run,
+then with the dry run disabled to sign, reserve annotated tag `vA.B.C`, publish
+to Maven Central, create the GitHub release and advance the patch snapshot.
+
+Release-branch pushes and completed publications run `release-merge-back.yml`.
+It proposes release fixes in a PR against master, retaining master's
+`projectVersion`. Resolve other conflicts through normal review. To retry,
+dispatch merge-back on master with the release branch name.
+
+Allow GitHub Actions to create pull requests, or configure `RELEASE_PR_TOKEN`
+with contents and pull-request write access for the automation branches. Use a
+dedicated token when branch protection requires CI triggered by PR updates.

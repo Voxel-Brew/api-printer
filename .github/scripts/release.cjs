@@ -49,15 +49,23 @@ function main(command) {
     const releaseBranch = `release/${v.major}.${v.minor}.x`;
     if (command === 'prepare') {
       assert.equal(branch, 'master', 'Prepare on master');
-      assert.equal(remote(`refs/heads/${releaseBranch}`), '', 'Release branch already exists');
+      const updateBranch = `automation/next-minor/${v.major}.${v.minor}.x`;
+      if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, `branch=${updateBranch}\n`);
+      if (remote(`refs/heads/${releaseBranch}`)) {
+        const existing = remote(`refs/heads/${updateBranch}`);
+        assert(existing, 'Release line already exists without a pending minor bump');
+        git('fetch', 'origin', `refs/heads/${updateBranch}`);
+        assert.equal(git('rev-parse', `${existing}^`), selected, 'Minor bump has a different base');
+        return;
+      }
       const name = process.env.GITHUB_REPOSITORY.split('/')[1].replace(/^api-/, '');
       const pinned = pinDependencies(original, name);
       const release = pinned === original ? selected : commit(pinned, 'Pin API release dependencies');
       git('checkout', '--detach', selected);
       const next = `${v.major}.${v.minor + 1}.0-SNAPSHOT`;
       const head = commit(replaceVersion(original, next), `Begin ${next} development`);
-      git('push', '--atomic', `--force-with-lease=refs/heads/master:${selected}`, `--force-with-lease=refs/heads/${releaseBranch}:`, 'origin', `${release}:refs/heads/${releaseBranch}`, `${head}:refs/heads/master`);
-      console.log(`Prepared ${releaseBranch}; master is now ${next}`);
+      git('push', '--atomic', `--force-with-lease=refs/heads/${updateBranch}:`, `--force-with-lease=refs/heads/${releaseBranch}:`, 'origin', `${release}:refs/heads/${releaseBranch}`, `${head}:refs/heads/${updateBranch}`);
+      console.log(`Prepared ${releaseBranch}; proposed master version ${next}`);
       return;
     }
     assert.equal(branch, releaseBranch, 'Publish from release/A.B.x');
