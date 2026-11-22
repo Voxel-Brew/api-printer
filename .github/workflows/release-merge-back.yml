@@ -1,7 +1,7 @@
 name: Merge release fixes back to master
 on:
   push:
-    branches: ['release/*']
+    branches: ["release/*"]
   workflow_dispatch:
     inputs:
       branch:
