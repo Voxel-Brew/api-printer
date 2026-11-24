@@ -44,7 +44,7 @@ jobs:
           cp "$RUNNER_TEMP/merged.properties" gradle.properties
           git add gradle.properties
           test -z "$(git diff --name-only --diff-filter=U)"
-          branch="automation/merge-back/${RELEASE_BRANCH#release/}"
+          branch="mb2m/$RELEASE_BRANCH"
           title="Merge $RELEASE_BRANCH fixes into master"
           if git diff --cached --quiet && ! git show-ref --verify --quiet "refs/remotes/origin/$branch"; then exit 0; fi
           git commit -m "$title"
