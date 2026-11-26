@@ -67,6 +67,11 @@ link relevant issues, identify compatibility or publication changes, and list ve
 Screenshots are needed only when documentation rendering changes. Run `./gradlew check` before
 requesting review.
 
+When a pull request resolves a known GitHub issue, add `Closes #123` to the PR description,
+using the actual issue number. For an issue in another repository, use
+`Closes owner/repository#123`. Add the closing reference to the PR targeting
+`master` so GitHub closes the issue when the PR is merged.
+
 ## Security & Publication
 
 Never commit tokens, signing keys, generated build output, or Gradle user properties. Preserve BOM
